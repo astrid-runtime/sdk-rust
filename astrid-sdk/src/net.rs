@@ -11,6 +11,21 @@
 
 use super::*;
 
+/// Opaque host-minted owner of an authenticated local connection.
+///
+/// This is a comparison handle, not a credential. It carries no authority on
+/// its own and cannot be constructed from client payloads through the SDK.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct ConnectionOwner(String);
+
+impl ConnectionOwner {
+    /// Borrow the opaque owner value for equality checks and routing.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
 /// Direction argument for [`TcpStream::shutdown`] — mirror of
 /// [`std::net::Shutdown`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -169,6 +184,16 @@ pub struct TcpStream {
 }
 
 impl TcpStream {
+    /// Return the host-minted owner of this authenticated local connection.
+    ///
+    /// Outbound, remotely accepted, and unauthenticated streams return
+    /// `None`. Interactive request routing must fail closed in that case.
+    pub fn connection_owner(&self) -> Result<Option<ConnectionOwner>, SysError> {
+        wit_request_context::connection_owner(&self.inner)
+            .map(|owner| owner.map(ConnectionOwner))
+            .map_err(host_err)
+    }
+
     /// Open an outbound TCP connection to `host:port`.
     ///
     /// DNS resolution and the SSRF airlock run host-side; the WASM
@@ -588,6 +613,12 @@ fn parse_port(port_str: &str) -> std::io::Result<u16> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn connection_owner_exposes_only_an_opaque_comparison_value() {
+        let owner = ConnectionOwner("request-owner-1".to_owned());
+        assert_eq!(owner.as_str(), "request-owner-1");
+    }
 
     #[test]
     fn parse_host_port_basic() {
