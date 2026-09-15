@@ -9,7 +9,14 @@ Changelog tracking starts with 0.2.0. Prior versions were not tracked.
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-09-15
+
 ### Added
+
+- **Authenticated connection ownership.** `TcpStream::connection_owner()` returns an opaque
+  `ConnectionOwner` comparison handle for an authenticated local connection. Capsules can use the
+  handle to route approval prompts to the originating client session without exposing credentials
+  or granting access to another connection's identity. (`astrid-runtime/wit#25`)
 
 - **`astrid:http@1.1.0` per-request controls.** The `http` module moves to the additive `@1.1.0`
   host interface; an unset option reproduces `@1.0.0` behaviour exactly. New `Request` builders:
@@ -291,7 +298,8 @@ it actually holds instead of hard-coding assumptions). No breaking changes.
 Initial tracked release. See the [repository history](https://github.com/unicity-astrid/sdk-rust/commits/v0.2.0)
 for changes included in this version.
 
-[Unreleased]: https://github.com/unicity-astrid/sdk-rust/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/astrid-runtime/sdk-rust/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/astrid-runtime/sdk-rust/compare/v0.7.1...v0.7.2
 [0.4.0]: https://github.com/unicity-astrid/sdk-rust/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/unicity-astrid/sdk-rust/compare/v0.2.2...v0.3.0
 [0.2.2]: https://github.com/unicity-astrid/sdk-rust/compare/v0.2.1...v0.2.2
