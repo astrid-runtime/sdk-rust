@@ -16,4 +16,11 @@ interface host {
     /// authenticated strongly enough to own interactive requests. Consumers
     /// must fail closed for owner-scoped prompts when this is `none`.
     connection-owner: func(connection: borrow<tcp-stream>) -> result<option<string>, error-code>;
+
+    /// Return the principal authenticated for an accepted local connection.
+    ///
+    /// `none` means the stream is outbound, remotely accepted, or did not
+    /// complete principal authentication. A bridge must not substitute a
+    /// payload-supplied principal when this is `none`.
+    connection-principal: func(connection: borrow<tcp-stream>) -> result<option<string>, error-code>;
 }

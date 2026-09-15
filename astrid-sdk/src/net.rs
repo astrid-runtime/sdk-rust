@@ -26,6 +26,22 @@ impl ConnectionOwner {
     }
 }
 
+/// Principal authenticated by the host for a local connection.
+///
+/// This value comes from Astrid's local-transport handshake, never from a
+/// message body. Capsules should use it as the connection's identity and may
+/// treat any payload principal only as a consistency check.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct ConnectionPrincipal(String);
+
+impl ConnectionPrincipal {
+    /// Borrow the authenticated principal name.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
 /// Direction argument for [`TcpStream::shutdown`] — mirror of
 /// [`std::net::Shutdown`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -191,6 +207,16 @@ impl TcpStream {
     pub fn connection_owner(&self) -> Result<Option<ConnectionOwner>, SysError> {
         wit_request_context::connection_owner(&self.inner)
             .map(|owner| owner.map(ConnectionOwner))
+            .map_err(host_err)
+    }
+
+    /// Return the principal authenticated for this local connection.
+    ///
+    /// Outbound, remotely accepted, and unauthenticated streams return
+    /// `None`. Identity-sensitive ingress must fail closed in that case.
+    pub fn connection_principal(&self) -> Result<Option<ConnectionPrincipal>, SysError> {
+        wit_request_context::connection_principal(&self.inner)
+            .map(|principal| principal.map(ConnectionPrincipal))
             .map_err(host_err)
     }
 
@@ -618,6 +644,12 @@ mod tests {
     fn connection_owner_exposes_only_an_opaque_comparison_value() {
         let owner = ConnectionOwner("request-owner-1".to_owned());
         assert_eq!(owner.as_str(), "request-owner-1");
+    }
+
+    #[test]
+    fn connection_principal_exposes_the_authenticated_name() {
+        let principal = ConnectionPrincipal("alice".to_owned());
+        assert_eq!(principal.as_str(), "alice");
     }
 
     #[test]
