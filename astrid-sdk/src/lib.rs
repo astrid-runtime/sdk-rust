@@ -57,6 +57,7 @@ use astrid_sys::astrid::ipc::host as wit_ipc;
 use astrid_sys::astrid::kv::host as wit_kv;
 use astrid_sys::astrid::net::host as wit_net;
 use astrid_sys::astrid::process1_1_0::host as wit_process;
+use astrid_sys::astrid::request_context::host as wit_request_context;
 use astrid_sys::astrid::sys::host as wit_sys;
 use astrid_sys::astrid::uplink::host as wit_uplink;
 use borsh::{BorshDeserialize, BorshSerialize};
